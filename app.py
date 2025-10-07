@@ -1,38 +1,45 @@
 import streamlit as st
-import numpy as np
+import tensorflow as tf
 from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing import image
 from PIL import Image
-import requests
-import os
+import numpy as np
 
-import gdown
+# -----------------------------
+# Load your trained Keras model
+# -----------------------------
+MODEL_PATH = 'plant_disease_prediction_model.keras'  # make sure it's in the same folder
+model = load_model(MODEL_PATH)
 
-MODEL_URL = "https://drive.google.com/uc?id=1w-m6L3Z6M0QNBENbaRLcOQ8oAJRaANJB"
-MODEL_PATH = "plant_disease_prediction_model.h5"
+# -----------------------------
+# Define prediction function
+# -----------------------------
+def predict_disease(image):
+    image = image.resize((224, 224))  # use your model input size
+    img_array = tf.keras.utils.img_to_array(image)
+    img_array = np.expand_dims(img_array, axis=0)
+    img_array = img_array / 255.0  # normalize if your model was trained that way
 
-if not os.path.exists(MODEL_PATH):
-    st.write("📥 Downloading model...")
-    gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
-    st.write("✅ Model downloaded!")
+    prediction = model.predict(img_array)
+    predicted_class = np.argmax(prediction, axis=1)[0]
 
+    return predicted_class
 
-# --- Streamlit UI ---
-st.title("🌿 Plant Disease Prediction App")
-st.write("Upload a plant leaf image to predict the disease")
+# -----------------------------
+# Streamlit UI
+# -----------------------------
+st.title("🌿 Plant Disease Detection App")
+st.write("Upload a leaf image and let the model predict the disease!")
 
-uploaded_file = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader("Upload Leaf Image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    img = Image.open(uploaded_file).resize((128, 128))  # adjust size if different in training
-    st.image(img, caption="Uploaded Leaf Image", use_column_width=True)
+    image = Image.open(uploaded_file)
+    st.image(image, caption="Uploaded Image", use_column_width=True)
 
-    # Preprocess image
-    x = image.img_to_array(img)
-    x = np.expand_dims(x, axis=0) / 255.0
+    st.write("⏳ Predicting...")
+    pred = predict_disease(image)
 
-    # Prediction
-    preds = model.predict(x)
-    pred_class = np.argmax(preds, axis=1)
+    # Example: change this list to your class labels
+    class_names = ['Apple Scab', 'Apple Rust', 'Healthy', 'Potato Early Blight', 'Potato Late Blight']
 
-    st.success(f"✅ Prediction class: {pred_class[0]}")
+    st.success(f"✅ Prediction: **{class_names[pred]}**")
