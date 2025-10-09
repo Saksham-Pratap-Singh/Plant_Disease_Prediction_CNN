@@ -8,6 +8,7 @@ A deep learning-based Streamlit web app that predicts plant diseases from leaf i
 This project uses a Convolutional Neural Network (CNN) to classify plant leaf diseases.  
 The model is integrated into a user-friendly Streamlit interface for real-time predictions.
 Kaggle Dataset-  https://www.kaggle.com/datasets/abdallahalidev/plantvillage-dataset
+
 Trained Model- https://drive.google.com/file/d/1oX6WJtBwq01zZNoWwgeUda7k9FnmP-Ba/view?usp=drive_link
 
 ---
